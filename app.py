@@ -10,7 +10,7 @@ CHAT_ID = os.environ.get("CHAT_ID")
 
 @app.route("/send", methods=["GET"])
 def send_message():
-    message = "✅ 성공이야! Render 서버에서 드디어 메시지 보낸다!!! 🚀✍️"
+    message = "✅ 성공이다! Render 서버에서 드디어 메시지 보낸다!!! 🥳✏️"
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     data = {
         "chat_id": CHAT_ID,

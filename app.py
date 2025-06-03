@@ -4,7 +4,7 @@ from flask import Flask
 app = Flask(__name__)
 
 # 🌐 성준이의 텔레그램 정보
-TELEGRAM_TOKEN = "8170134694:AAFD3DbDd-2ZhhDHYy-H1KAwxW_AXyzjqsQ"
+TELEGRAM_TOKEN = 8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI
 CHAT_ID = "7541916016"
 
 @app.route('/')

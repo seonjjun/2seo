@@ -1,16 +1,11 @@
-import os
 import requests
 from flask import Flask
-from dotenv import load_dotenv
-
-# .env 파일 불러오기
-load_dotenv()
 
 app = Flask(__name__)
 
-# 환경변수에서 토큰과 챗아이디 불러오기
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+# 🔥 환경변수 대신 직접 입력
+TELEGRAM_TOKEN = "8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI"
+CHAT_ID = "7541916016"
 
 @app.route("/send")
 def send_message():

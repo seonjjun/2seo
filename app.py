@@ -21,3 +21,4 @@ def send_message():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+print("텔레그램 메시지 보냄!")

@@ -7,7 +7,7 @@ app = Flask(__name__)
 TELEGRAM_TOKEN = "8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI"
 CHAT_ID = "7541910616"  # 성준이의 chat_id
 
-@app.route("/send")  # ← 이 줄이 없으면 /send 접근 안 됨!
+@app.route("/send", methods=["GET"]) # ← 이 줄이 없으면 /send 접근 안 됨!
 def send_message():
     message = "성준아! Render 서버에서 드디어 메시지 보낸다!!! 🎯"
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"

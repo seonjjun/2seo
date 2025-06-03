@@ -1,18 +1,16 @@
 import os
 import requests
 from flask import Flask
-from dotenv import load_dotenv
-
-load_dotenv()  # .env 파일의 환경변수 불러오기
 
 app = Flask(__name__)
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+# 환경변수에서 값 불러오기 (Render의 Environment 탭 기준)
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 
 @app.route("/send", methods=["GET"])
 def send_message():
-    message = "✅ 성준아! Render 서버에서 드디어 메시지 보낸다!! 🧨🚀"
+    message = "✅ 성공이야! Render 서버에서 드디어 메시지 보낸다!!! 🚀✍️"
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     data = {
         "chat_id": CHAT_ID,

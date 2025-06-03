@@ -3,7 +3,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# 🔥 환경변수 대신 직접 입력
+# 🔥 환경변수 없이 직접 입력
 TELEGRAM_TOKEN = "8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI"
 CHAT_ID = "7541916016"
 
@@ -17,3 +17,7 @@ def send_message():
     }
     requests.post(url, json=payload)
     return "메시지 전송 완료!"
+
+# 🧠 요게 빠져있어서 서버가 안 켜졌던 거야!
+if __name__ == "__main__":
+    app.run()

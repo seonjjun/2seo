@@ -5,7 +5,7 @@ from flask import Flask
 app = Flask(__name__)
 
 TELEGRAM_TOKEN = "8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI"
-CHAT_ID = "7541910616"  # ← 성준이의 실제 chat_id 숫자!
+CHAT_ID = "7541910616"  # 성준이의 실제 chat_id 숫자
 
 @app.route("/send")
 def send_message():
@@ -21,4 +21,3 @@ def send_message():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-

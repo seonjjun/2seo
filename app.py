@@ -1,23 +1,24 @@
+import os
 import requests
 from flask import Flask
+from dotenv import load_dotenv
+
+# .env 파일 불러오기
+load_dotenv()
 
 app = Flask(__name__)
 
-# 🌐 성준이의 텔레그램 정보
-TELEGRAM_TOKEN = 8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI
-CHAT_ID = "7541916016"
+# 환경변수에서 토큰과 챗아이디 불러오기
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
-@app.route('/')
-def home():
-    return "2seo Alert Bot is running!"
-
-@app.route('/send')
+@app.route("/send")
 def send_message():
-    message = "이서가 보내는 첫 번째 메시지야 😊"
+    message = "이서가 보내는 첫 번째 메시지 😎"
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {
+    payload = {
         "chat_id": CHAT_ID,
         "text": message
     }
-    response = requests.post(url, data=data)
-    return f"보낸 결과: {response.json()}"
+    requests.post(url, json=payload)
+    return "메시지 전송 완료!"

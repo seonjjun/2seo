@@ -15,7 +15,7 @@ def send_message():
         "chat_id": CHAT_ID,
         "text": message
     }
-    requests.post(url, data=data)
+    requests.post(url, json=data)
     return "메시지 전송 완료!"
 
 if __name__ == "__main__":

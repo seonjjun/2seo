@@ -4,9 +4,9 @@ import os
 
 app = Flask(__name__)
 
-# 텔레그램 정보
-BOT_TOKEN = '8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI'
-CHAT_ID = '7541916016'
+# 환경변수에서 불러오기
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+CHAT_ID = os.environ.get('CHAT_ID')
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 @app.route('/webhook', methods=['POST'])
@@ -27,5 +27,5 @@ def webhook():
     return 'OK', 200
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Render용 포트 설정
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

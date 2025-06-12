@@ -1,24 +1,31 @@
-import os
+from flask import Flask, request
 import requests
-from flask import Flask
+import os
 
 app = Flask(__name__)
 
-# Render의 Environment 탭 기준
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
+# 텔레그램 정보
+BOT_TOKEN = '8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI'
+CHAT_ID = '7541916016'
+TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-@app.route("/send", methods=["GET"])
-def send_message():
-    message = "✅ 성공이다! Render 서버에서 드디어 메시지 보낸다!!! 🐱✏️"
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {
-        "chat_id": CHAT_ID,
-        "text": message
-    }
-    requests.post(url, json=data)
-    return "✅ 메시지 전송 완료!"
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json()
+    message = data.get('message', '📡 데이터 수신: ' + str(data))
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    try:
+        response = requests.post(TELEGRAM_URL, data={
+            'chat_id': CHAT_ID,
+            'text': message
+        })
+        print(f"✅ 텔레그램 응답 코드: {response.status_code}")
+        print(f"📨 응답 내용: {response.text}")
+    except Exception as e:
+        print(f"❌ 텔레그램 전송 실패: {e}")
+
+    return 'OK', 200
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Render용 포트 설정
+    app.run(host='0.0.0.0', port=port)

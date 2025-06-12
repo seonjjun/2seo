@@ -4,7 +4,12 @@ import os
 
 app = Flask(__name__)
 
-# 환경변수에서 불러오기
+# 요청 수신 로깅
+@app.before_request
+def log_request_info():
+    print(f"📥 요청 도착: {request.method} {request.path}")
+
+# 환경변수에서 토큰과 챗 ID 불러오기
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -12,13 +17,14 @@ TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
-    message = data.get('message', '📡 데이터 수신: ' + str(data))
+    message = data.get('message', '📭 메시지 없음: ' + str(data))
 
     try:
         response = requests.post(TELEGRAM_URL, data={
             'chat_id': CHAT_ID,
             'text': message
         })
+        print(f"📡 웹훅으로부터 수신: {data}")
         print(f"✅ 텔레그램 응답 코드: {response.status_code}")
         print(f"📨 응답 내용: {response.text}")
     except Exception as e:

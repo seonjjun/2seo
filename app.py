@@ -1,28 +1,17 @@
 from flask import Flask, request
-import os
-import requests
+import os, requests
 
 app = Flask(__name__)
-
-BOT_TOKEN = os.environ.get('BOT_TOKEN')
-CHAT_ID = os.environ.get('CHAT_ID')
-TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
-    message = data.get('message', '[경고] message 키가 없습니다.')
-
-    print(f"📩 받은 메시지: {message}")
-    
+    message = data.get('message', '[none]')
+    print("📨 메시지:", message)
     try:
-        response = requests.post(TELEGRAM_URL, data={
-            'chat_id': CHAT_ID,
-            'text': message
-        })
-        print(f"✅ 전송 성공: {response.status_code}")
-        print(f"📨 응답 내용: {response.text}")
+        res = requests.post(f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendMessage",
+                             data={'chat_id': os.environ['CHAT_ID'], 'text': message})
+        print("✅ 텔레그램 응답:", res.text)
     except Exception as e:
-        print(f"❌ 전송 실패: {e}")
-
-    return "OK", 200
+        print("❌ 전송 에러:", e)
+    return 'OK', 200

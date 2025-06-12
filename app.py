@@ -4,7 +4,6 @@ import requests
 
 app = Flask(__name__)
 
-# 환경변수에서 토큰과 챗 ID 가져오기
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -21,9 +20,9 @@ def webhook():
             'chat_id': CHAT_ID,
             'text': message
         })
-        print(f"✅ 텔레그램 전송 상태 코드: {response.status_code}")
-        print(f"📨 텔레그램 응답: {response.text}")
+        print(f"✅ 전송 성공: {response.status_code}")
+        print(f"📨 응답 내용: {response.text}")
     except Exception as e:
-        print(f"❌ 텔레그램 전송 실패: {e}")
+        print(f"❌ 전송 실패: {e}")
 
     return "OK", 200

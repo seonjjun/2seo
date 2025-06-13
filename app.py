@@ -55,6 +55,7 @@ import hmac
 import base64
 import hashlib
 import time
+from datetime import datetime, timezone  # 🔥 타임스탬프 오류 방지용
 
 API_KEY = 'ff8d0b4a-fdda-4de1-a579-b2076593b7fa'
 SECRET_KEY = '49E886BC5608EAB889274AB16323A1B1'
@@ -67,7 +68,7 @@ def generate_signature(timestamp, method, request_path, body):
 
 def get_balances():
     url = 'https://www.okx.com/api/v5/account/balance'
-    timestamp = str(time.time())
+    timestamp = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds').replace("+00:00", "Z")
     method = 'GET'
     request_path = '/api/v5/account/balance'
     body = ''
@@ -95,3 +96,4 @@ def get_balances():
 @app.route('/test-okx-balance', methods=['GET'])
 def test_okx_balance():
     return get_balances()
+

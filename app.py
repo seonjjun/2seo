@@ -81,7 +81,16 @@ def get_balances():
     }
 
     response = requests.get(url, headers=headers)
-    return response.json()
+
+    try:
+        return response.json()
+    except Exception as e:
+        return {
+            "error": "❌ OKX 응답 파싱 실패",
+            "status_code": response.status_code,
+            "text": response.text,
+            "exception": str(e)
+        }
 
 @app.route('/test-okx-balance', methods=['GET'])
 def test_okx_balance():

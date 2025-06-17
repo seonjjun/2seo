@@ -59,7 +59,7 @@ def analyze_structure():
         features = extract_feature_vector(incoming)
 
         response = client.query.get("Structure", [
-            "id", "description", "success", "time", "image"
+         "description", "success", "time", "image"
         ])\
         .with_near_vector({"vector": features})\
         .with_limit(3)\

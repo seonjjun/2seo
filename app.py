@@ -6,13 +6,13 @@ import hmac
 import base64
 import hashlib
 import time
-from datetime import datetime, timezone  # 🔥 타임스탬프 오류 방지용
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 
 # === 텔레그램 설정 ===
 TELEGRAM_TOKEN = '8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI'
-CHAT_ID = '7541916016'  # ← 숫자 그대로!
+CHAT_ID = '7541916016'
 
 # === Weaviate 설정 ===
 WEAVIATE_URL = os.getenv("WEAVIATE_URL")
@@ -47,20 +47,20 @@ def analyze_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+# === 저장 API (/store) ===
 @app.route('/store', methods=['POST'])
 def store_structure():
     try:
         data = request.get_json()
-
         structure_id = data.get("id")
         vector = [
-            data["indicators"].get("RSI", 0),
-            data["indicators"].get("OBV", 0),
-            data["indicators"].get("거래량", 0)
+            data.get("rsi", 0),
+            data.get("obv", 0),
+            data.get("volume", 0)
         ]
 
         client.data_object.create(
-            properties=data,
+            data_object=data,
             class_name="Structure",
             uuid=structure_id,
             vector=vector
@@ -68,7 +68,6 @@ def store_structure():
         return jsonify({"status": "ok", "message": f"{structure_id} 저장 완료"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
-
 
 # === 삭제 API (/delete-structure) ===
 @app.route('/delete-structure', methods=['POST'])
@@ -94,11 +93,11 @@ def analyze_alert(data):
     note = data.get('note', '')
 
     if tag == 'LONG_ENTRY_SIGNAL' and 'RSI' in condition:
-        return f"📈 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
+        return f"\ud83d\udcc8 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
     elif tag == 'SHORT_BREAKDOWN' and 'EMA' in condition:
-        return f"📉 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
+        return f"\ud83d\udcc9 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
     else:
-        return f"⚠️ *미분석 알림 도착*\n데이터: {data}"
+        return f"\u26a0\ufe0f *미분석 알림 도착*\n데이터: {data}"
 
 # === 텔레그램 전송 함수 ===
 def send_telegram_message(msg):
@@ -153,7 +152,7 @@ def get_balances():
         return response.json()
     except Exception as e:
         return {
-            "error": "❌ OKX 응답 파싱 실패",
+            "error": "\u274c OKX \uc751\ub2f5 \ud30c\uc2f1 \uc2e4\ud328",
             "status_code": response.status_code,
             "text": response.text,
             "exception": str(e)

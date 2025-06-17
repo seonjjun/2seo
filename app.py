@@ -36,23 +36,20 @@ def extract_feature_vector(data):
 def store_structure():
     try:
         data = request.get_json()
+
         vector = extract_feature_vector(data)
 
         client.data_object.create(
+            data_object=data,
             class_name="Structure",
-            properties=data,
             vector=vector
         )
 
-        return jsonify({
-            "status": "ok",
-            "message": f"{data.get('id', 'unknown')} 저장 완료"
-        })
-
+        return jsonify({"status": "ok", "message": "구조 저장 완료"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 구조 분석 API (/analyze) ===
+# === 유사도 분석 API (/analyze) ===
 @app.route('/analyze', methods=['POST'])
 def analyze_structure():
     try:
@@ -68,11 +65,10 @@ def analyze_structure():
 
         results = response['data']['Get']['Structure']
         return jsonify({"status": "ok", "results": results})
-
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 구조 삭제 API (/delete-structure) ===
+# === 삭제 API (/delete-structure) ===
 @app.route('/delete-structure', methods=['POST'])
 def delete_structure():
     try:
@@ -86,7 +82,7 @@ def delete_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 이서 분석기 함수 (웹훅용) ===
+# === 이서 분석기 함수 (웹훅 알림 분석) ===
 def analyze_alert(data):
     symbol = data.get('symbol', 'Unknown')
     interval = data.get('interval', 'N/A')
@@ -96,11 +92,11 @@ def analyze_alert(data):
     note = data.get('note', '')
 
     if tag == 'LONG_ENTRY_SIGNAL' and 'RSI' in condition:
-        return f"\ud83d\udcc8 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
+        return f"📈 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
     elif tag == 'SHORT_BREAKDOWN' and 'EMA' in condition:
-        return f"\ud83d\udcc9 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
+        return f"📉 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
     else:
-        return f"\u26a0\ufe0f *미분석 알림 도착*\n데이터: {data}"
+        return f"⚠️ *미분석 알림 도착*\n데이터: {data}"
 
 # === 텔레그램 전송 함수 ===
 def send_telegram_message(msg):
@@ -112,11 +108,10 @@ def send_telegram_message(msg):
     }
     requests.post(url, json=payload)
 
-# === 웹훅 수신 (/webhook) ===
+# === 웹훅 알림 수신 엔드포인트 ===
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
-
     if not data:
         return {'status': 'no data received'}, 400
 
@@ -124,7 +119,7 @@ def webhook():
     send_telegram_message(message)
     return {'status': 'alert processed'}, 200
 
-# === OKX 잔고 확인 API (/test-okx-balance) ===
+# === OKX 잔고 확인 API ===
 API_KEY = 'ff8d0b4a-fdda-4de1-a579-b2076593b7fa'
 SECRET_KEY = '49E886BC5608EAB889274AB16323A1B1'
 PASSPHRASE = '#eseoAI0612'
@@ -150,12 +145,11 @@ def get_balances():
     }
 
     response = requests.get(url, headers=headers)
-
     try:
         return response.json()
     except Exception as e:
         return {
-            "error": "\u274c OKX 응답 파싱 실패",
+            "error": "❌ OKX 응답 파싱 실패",
             "status_code": response.status_code,
             "text": response.text,
             "exception": str(e)

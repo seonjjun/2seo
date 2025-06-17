@@ -61,8 +61,9 @@ def analyze_structure():
         features = extract_feature_vector(incoming)
 
         response = client.query.get("Structure", [
-         "description", "success", "time", "image"
+            "description", "success", "time", "image"
         ])\
+        .with_additional(["distance"])\
         .with_near_vector({"vector": features})\
         .with_limit(3)\
         .do()
@@ -75,6 +76,20 @@ def analyze_structure():
             })
 
         results = response['data']['Get']['Structure']
+
+        # === 텔레그램 포맷팅
+        msg = "📊 유사 분석 결과 TOP 3\n"
+        for i, item in enumerate(results):
+            desc = item.get("description", "(설명 없음)")
+            success = "✅ 성공" if item.get("success") else "❌ 실패"
+            time = item.get("time") or "없음"
+            image = item.get("image") or "없음"
+            dist = item.get("_additional", {}).get("distance", 1.0)
+            similarity = round(1 / (1 + dist) * 100, 2)
+
+            msg += f"\n{i+1}️⃣ {desc}\n{success} | 유사도: {similarity}%\n🕒 {time}\n🖼️ {image if image != '없음' else '이미지 없음'}\n"
+
+        send_telegram_message(msg)
         return jsonify({"status": "ok", "results": results})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})

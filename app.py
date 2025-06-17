@@ -25,10 +25,9 @@ client = weaviate.Client(
 
 # === 벡터 추출 함수 ===
 def extract_feature_vector(data):
-    # 실전에서는 더 많은 feature 사용 가능
     return [data.get("rsi", 0), data.get("obv", 0), data.get("volume", 0)]
 
-# === 분석 API (Telegram에서 /분석 명령어 호출 시 연결될 예정) ===
+# === 분석 API (/analyze) ===
 @app.route('/analyze', methods=['POST'])
 def analyze_structure():
     try:
@@ -36,11 +35,11 @@ def analyze_structure():
         features = extract_feature_vector(incoming)
 
         response = client.query.get("Structure", [
-                "id", "description", "success", "time", "image", "_additional {certainty}"
-            ])\
-            .with_near_vector({"vector": features})\
-            .with_limit(3)\
-            .do()
+            "id", "description", "success", "time", "image"
+        ])\
+        .with_near_vector({"vector": features})\
+        .with_limit(3)\
+        .do()
 
         results = response['data']['Get']['Structure']
         return jsonify({"status": "ok", "results": results})
@@ -48,7 +47,21 @@ def analyze_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 이서 분석기 함수 ===
+# === 삭제 API (/delete-structure) ===
+@app.route('/delete-structure', methods=['POST'])
+def delete_structure():
+    try:
+        data = request.get_json()
+        uuid = data.get("uuid")
+        if not uuid:
+            return jsonify({"status": "error", "message": "UUID is required"}), 400
+
+        client.data_object.delete(uuid=uuid, class_name="Structure")
+        return jsonify({"status": "ok", "message": f"Deleted {uuid}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+# === 이서 분석기 함수 (웹훅 알림용) ===
 def analyze_alert(data):
     symbol = data.get('symbol', 'Unknown')
     interval = data.get('interval', 'N/A')
@@ -57,7 +70,6 @@ def analyze_alert(data):
     tag = data.get('strategy_tag', 'UNKNOWN')
     note = data.get('note', '')
 
-    # 전략 해석
     if tag == 'LONG_ENTRY_SIGNAL' and 'RSI' in condition:
         return f"📈 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
     elif tag == 'SHORT_BREAKDOWN' and 'EMA' in condition:
@@ -75,7 +87,7 @@ def send_telegram_message(msg):
     }
     requests.post(url, json=payload)
 
-# === 웹훅 엔드포인트 ===
+# === 웹훅 알림 엔드포인트 (/webhook) ===
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
@@ -83,15 +95,11 @@ def webhook():
     if not data:
         return {'status': 'no data received'}, 400
 
-    # 이서 분석기 작동
     message = analyze_alert(data)
-
-    # 텔레그램 전송
     send_telegram_message(message)
-
     return {'status': 'alert processed'}, 200
 
-# === OKX 잔고 확인용 ===
+# === OKX 잔고 확인 API (/test-okx-balance) ===
 API_KEY = 'ff8d0b4a-fdda-4de1-a579-b2076593b7fa'
 SECRET_KEY = '49E886BC5608EAB889274AB16323A1B1'
 PASSPHRASE = '#eseoAI0612'

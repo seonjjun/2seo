@@ -24,29 +24,31 @@ client = weaviate.Client(
 
 # === 벡터 추출 함수 ===
 def extract_feature_vector(data):
-    return [
-        float(data.get("rsi", 0)),
-        float(data.get("obv", 0)),
-        float(data.get("volume", 0))
-    ]
+    def safe_extract(key):
+        val = data.get(key)
+        return float(val[-1]) if isinstance(val, list) else float(val)
+    try:
+        return [
+            safe_extract("rsi"),
+            safe_extract("obv"),
+            safe_extract("volume")
+        ]
+    except Exception as e:
+        raise ValueError(f"❌ 벡터 추출 실패: {e}")
 
 # === 구조 저장 API (/store) ===
 @app.route('/store', methods=['POST'])
 def store_structure():
     try:
         data = request.get_json()
-
         vector = extract_feature_vector(data)
-
         response = client.data_object.create(
             data_object=data,
             class_name="Structure",
             vector=vector
         )
-
         print("✅ Weaviate 저장 응답:", response)
         return jsonify({"status": "ok", "message": "구조 저장 완료"})
-
     except Exception as e:
         print("❌ 저장 실패:", str(e))
         return jsonify({"status": "error", "message": str(e)})

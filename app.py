@@ -25,9 +25,34 @@ client = weaviate.Client(
 
 # === 벡터 추출 함수 ===
 def extract_feature_vector(data):
-    return [data.get("rsi", 0), data.get("obv", 0), data.get("volume", 0)]
+    return [
+        float(data.get("rsi", 0)),
+        float(data.get("obv", 0)),
+        float(data.get("volume", 0))
+    ]
 
-# === 분석 API (/analyze) ===
+# === 구조 저장 API (/store) ===
+@app.route('/store', methods=['POST'])
+def store_structure():
+    try:
+        data = request.get_json()
+        vector = extract_feature_vector(data)
+
+        client.data_object.create(
+            class_name="Structure",
+            properties=data,
+            vector=vector
+        )
+
+        return jsonify({
+            "status": "ok",
+            "message": f"{data.get('id', 'unknown')} 저장 완료"
+        })
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+# === 구조 분석 API (/analyze) ===
 @app.route('/analyze', methods=['POST'])
 def analyze_structure():
     try:
@@ -47,29 +72,7 @@ def analyze_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 저장 API (/store) ===
-@app.route('/store', methods=['POST'])
-def store_structure():
-    try:
-        data = request.get_json()
-        structure_id = data.get("id")
-        vector = [
-            data.get("rsi", 0),
-            data.get("obv", 0),
-            data.get("volume", 0)
-        ]
-
-        client.data_object.create(
-            data_object=data,
-            class_name="Structure",
-            uuid=structure_id,
-            vector=vector
-        )
-        return jsonify({"status": "ok", "message": f"{structure_id} 저장 완료"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
-
-# === 삭제 API (/delete-structure) ===
+# === 구조 삭제 API (/delete-structure) ===
 @app.route('/delete-structure', methods=['POST'])
 def delete_structure():
     try:
@@ -83,7 +86,7 @@ def delete_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-# === 이서 분석기 함수 (웹훅 알림용) ===
+# === 이서 분석기 함수 (웹훅용) ===
 def analyze_alert(data):
     symbol = data.get('symbol', 'Unknown')
     interval = data.get('interval', 'N/A')
@@ -109,7 +112,7 @@ def send_telegram_message(msg):
     }
     requests.post(url, json=payload)
 
-# === 웹훅 알림 엔드포인트 (/webhook) ===
+# === 웹훅 수신 (/webhook) ===
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()
@@ -152,7 +155,7 @@ def get_balances():
         return response.json()
     except Exception as e:
         return {
-            "error": "\u274c OKX \uc751\ub2f5 \ud30c\uc2f1 \uc2e4\ud328",
+            "error": "\u274c OKX 응답 파싱 실패",
             "status_code": response.status_code,
             "text": response.text,
             "exception": str(e)

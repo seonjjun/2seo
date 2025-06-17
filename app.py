@@ -47,6 +47,27 @@ def analyze_structure():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+@app.route('/store', methods=['POST'])
+def store_structure():
+    try:
+        data = request.get_json()
+        vector = extract_feature_vector(data)
+
+        client.data_object.create(
+            data={
+                "id": data.get("id"),
+                "description": data.get("description"),
+                "success": data.get("success"),
+                "time": data.get("time"),
+                "image": data.get("image")
+            },
+            class_name="Structure",
+            vector=vector
+        )
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
 # === 삭제 API (/delete-structure) ===
 @app.route('/delete-structure', methods=['POST'])
 def delete_structure():

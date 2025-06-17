@@ -5,7 +5,6 @@ import os
 import hmac
 import base64
 import hashlib
-import time
 from datetime import datetime, timezone
 
 app = Flask(__name__)
@@ -66,6 +65,13 @@ def analyze_structure():
         .with_limit(3)\
         .do()
 
+        if "data" not in response or "Get" not in response["data"]:
+            return jsonify({
+                "status": "error",
+                "message": "Weaviate 응답에 data/Get 없음",
+                "raw": response
+            })
+
         results = response['data']['Get']['Structure']
         return jsonify({"status": "ok", "results": results})
     except Exception as e:
@@ -95,11 +101,11 @@ def analyze_alert(data):
     note = data.get('note', '')
 
     if tag == 'LONG_ENTRY_SIGNAL' and 'RSI' in condition:
-        return f"\ud83d\udcc8 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
+        return f"📈 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
     elif tag == 'SHORT_BREAKDOWN' and 'EMA' in condition:
-        return f"\ud83d\udcc9 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
+        return f"📉 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
     else:
-        return f"\u26a0\ufe0f *미분석 알림 도착*\n데이터: {data}"
+        return f"⚠️ *미분석 알림 도착*\n데이터: {data}"
 
 # === 텔레그램 전송 함수 ===
 def send_telegram_message(msg):
@@ -152,7 +158,7 @@ def get_balances():
         return response.json()
     except Exception as e:
         return {
-            "error": "\u274c OKX 응답 파싱 실패",
+            "error": "❌ OKX 응답 파싱 실패",
             "status_code": response.status_code,
             "text": response.text,
             "exception": str(e)

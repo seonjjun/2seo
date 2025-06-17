@@ -37,13 +37,26 @@ def store_structure():
     try:
         data = request.get_json()
 
-        vector = extract_feature_vector(data)
+        vector = [
+            float(data.get("rsi", 0)),
+            float(data.get("obv", 0)),
+            float(data.get("volume", 0))
+        ]
 
-        client.data_object.create(
+        # 🔍 저장 요청 & 디버그 출력
+        response = client.data_object.create(
             data_object=data,
             class_name="Structure",
             vector=vector
         )
+
+        print("✅ Weaviate 저장 응답:", response)
+        return jsonify({"status": "ok", "message": "구조 저장 완료"})
+
+    except Exception as e:
+        print("❌ 저장 실패:", str(e))
+        return jsonify({"status": "error", "message": str(e)})
+
 
         return jsonify({"status": "ok", "message": "구조 저장 완료"})
     except Exception as e:

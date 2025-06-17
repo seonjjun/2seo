@@ -50,23 +50,21 @@ def analyze_structure():
 @app.route('/store', methods=['POST'])
 def store_structure():
     try:
-        data = request.get_json()
-        vector = extract_feature_vector(data)
+        structure = request.get_json()
+        if not structure:
+            return jsonify({"status": "error", "message": "No data received"}), 400
 
         client.data_object.create(
-            data={
-                "id": data.get("id"),
-                "description": data.get("description"),
-                "success": data.get("success"),
-                "time": data.get("time"),
-                "image": data.get("image")
-            },
+            structure,
             class_name="Structure",
-            vector=vector
+            uuid=structure.get("id")  # 선택사항: 생략하면 자동 생성됨
         )
-        return jsonify({"status": "ok"})
+
+        return jsonify({"status": "ok", "message": f"Stored {structure.get('id')}"}), 200
+
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 # === 삭제 API (/delete-structure) ===
 @app.route('/delete-structure', methods=['POST'])

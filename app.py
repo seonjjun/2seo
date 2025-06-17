@@ -37,13 +37,8 @@ def store_structure():
     try:
         data = request.get_json()
 
-        vector = [
-            float(data.get("rsi", 0)),
-            float(data.get("obv", 0)),
-            float(data.get("volume", 0))
-        ]
+        vector = extract_feature_vector(data)
 
-        # 🔍 저장 요청 & 디버그 출력
         response = client.data_object.create(
             data_object=data,
             class_name="Structure",
@@ -55,11 +50,6 @@ def store_structure():
 
     except Exception as e:
         print("❌ 저장 실패:", str(e))
-        return jsonify({"status": "error", "message": str(e)})
-
-
-        return jsonify({"status": "ok", "message": "구조 저장 완료"})
-    except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
 # === 유사도 분석 API (/analyze) ===
@@ -105,11 +95,11 @@ def analyze_alert(data):
     note = data.get('note', '')
 
     if tag == 'LONG_ENTRY_SIGNAL' and 'RSI' in condition:
-        return f"📈 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
+        return f"\ud83d\udcc8 *롱 진입 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
     elif tag == 'SHORT_BREAKDOWN' and 'EMA' in condition:
-        return f"📉 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n📝 {note}"
+        return f"\ud83d\udcc9 *숏 붕괴 시그널*\n심볼: {symbol}\n주기: {interval}\n현재가: {price}\n조건: `{condition}`\n\ud83d\udcdd {note}"
     else:
-        return f"⚠️ *미분석 알림 도착*\n데이터: {data}"
+        return f"\u26a0\ufe0f *미분석 알림 도착*\n데이터: {data}"
 
 # === 텔레그램 전송 함수 ===
 def send_telegram_message(msg):
@@ -162,7 +152,7 @@ def get_balances():
         return response.json()
     except Exception as e:
         return {
-            "error": "❌ OKX 응답 파싱 실패",
+            "error": "\u274c OKX 응답 파싱 실패",
             "status_code": response.status_code,
             "text": response.text,
             "exception": str(e)

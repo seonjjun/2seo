@@ -9,6 +9,9 @@ from datetime import datetime, timezone
 
 app = Flask(__name__)
 
+# === 루프 제어 변수 ===
+should_stop = False
+
 # === 텔레그램 설정 ===
 TELEGRAM_TOKEN = '8170134694:AAF9WM10B9A9LvmfAPe26WoRse1oMUGwECI'
 CHAT_ID = '7541916016'
@@ -144,6 +147,14 @@ def webhook():
     message = analyze_alert(data)
     send_telegram_message(message)
     return {'status': 'alert processed'}, 200
+
+# ✅ 루프 중단 API 추가!
+@app.route('/stop-loop', methods=['POST'])
+def stop_loop():
+    global should_stop
+    should_stop = True
+    send_telegram_message("🛑 유사 분석 루프 중단 명령이 실행되었습니다.")
+    return jsonify({"status": "ok", "message": "루프 중단됨"})
 
 # === OKX 잔고 확인 API ===
 API_KEY = 'ff8d0b4a-fdda-4de1-a579-b2076593b7fa'
